@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
+</head>
+<body>
+    <div class="login">
+        <form class="login__form">
+            <input class="login__input" type="text" placeholder="Digite seu nome">
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+    <div class="chat" style="display:none;">
+        <form class="chat__form">
+            <input class="chat__input" type="text" placeholder="Digite sua mensagem">
+            <button type="submit">Enviar</button>
+        </form>
+        <div class="chat__messages"></div>
+    </div>
+    <script>
+        const loginForm = document.querySelector(".login__form");
+        const loginInput = document.querySelector(".login__input");
+        const chatForm = document.querySelector(".chat__form");
+        const chatInput = document.querySelector(".chat__input");
+        const chatMessages = document.querySelector(".chat__messages");
+        let websocket;
+
+        loginForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const nome = loginInput.value.trim();
+            if (nome) {
+                websocket = new WebSocket("ws://localhost:8080");
+                websocket.onopen = () => {
+                    console.log("Conectado ao servidor WebSocket");
+                    // Enviar mensagem de login com o nome do usuário
+                    websocket.send(JSON.stringify({ type: "login", nome: nome }));
+                    // Mostrar a interface do chat e ocultar a interface de login
+                    document.querySelector(".login").style.display = "none";
+                    document.querySelector(".chat").style.display = "block";
+                };
+
+                websocket.onmessage = (event) => {
+                    const message = JSON.parse(event.data);
+                    // Exibir a mensagem recebida na interface do chat
+                    mostrarMensagem(message);
+                };
+
+                websocket.onerror = (error) => {
+                    console.error("Erro na conexão WebSocket:", error);
+                };
+            }
+        });
+
+        chatForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const mensagem = chatInput.value.trim();
+            if (mensagem) {
+                // Enviar a mensagem para o servidor WebSocket
+                websocket.send(JSON.stringify({ type: "mensagem", conteudo: mensagem }));
+                chatInput.value = ""; // Limpar o campo de entrada de mensagem
+            }
+        });
+
+        function mostrarMensagem(message) {
+            const div = document.createElement("div");
+            div.textContent = `${message.nome}: ${message.conteudo}`;
+            chatMessages.appendChild(div);
+        }
+    </script>
+</body>
+</html>
