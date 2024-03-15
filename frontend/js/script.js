@@ -92,7 +92,7 @@ const handleLogin = (event) => {
     login.style.display = "none";
     chat.style.display = "flex";
 
-    websocket = new WebSocket("ws://chat-ghosthszz.onrender.com");
+    websocket = new WebSocket("ws://chatat.onrender.com");
     websocket.onmessage = processMessage;
     websocket.onopen = () => {
         console.log("Conexão WebSocket estabelecida com sucesso.");
